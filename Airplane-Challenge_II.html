@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Airplane</title>
+</head>
+<body>
+    <style type="text/css">
+        * {
+            border: 0;
+            margin: 0;
+        }
+        #ocean {
+            position: relative;
+            background-image: url("img/ocean2.jpg");
+            width: 900px;
+            height: 700px;
+            overflow: hidden;
+        }
+        #gameOver {
+            position: absolute;
+            top: 45%;
+            /* adjust top up half the height of a single line */
+            margin-top: -0.5em;
+            /* force content to always be a single line */
+            overflow: hidden;
+            white-space: nowrap;
+            width: 90%;
+            text-align: center;
+            color: white;
+            display: none;
+        }
+        .player {
+            position: absolute;
+            background-image: url("img/player2.png");
+            width: 70px;
+            height: 75px;
+        }
+        .enemy {
+            position: absolute;
+            background-image: url("img/enemy2.png");
+            width: 70px;
+            height: 75px;
+        }
+        .missle {
+            position: absolute;
+            background-color: yellow;
+            width: 2px;
+            height: 10px;
+        }
+        .explosions {
+            position: absolute;
+            background-image: url("img/explode.png");
+            width: 70px;
+            height: 75px;
+        }
+	</style>
+    
+    <div id="ocean">
+        <div id="players"></div>
+        <div id="enemies"></div>
+        <div id="missiles"></div>
+        <div id="explosions"></div>
+        <div id="gameOver">
+            <h1>Game Over</h1>
+        </div>
+    </div>
+
+	<script type="text/javascript">
+        // Challenge II
+        //      (basic) Change the color of the missiles.
+        //      (intermediate) Make enemies move faster.
+        //      (intermediate) Make the missiles move faster.
+        //      (advanced) Make the game look smoother (hint: game loop speed)
+
+        var gameEnd=false;
+
+        // Player Position
+        var player = {
+            left: 450,
+            top: 625
+        }
+
+        // Enemies Positions object
+        var enemies = [
+            { left:150, top:50 },
+            { left:250, top:100 },
+            { left:350, top:150 },
+            { left:450, top:100 },
+            { left:550, top:50 }
+        ];
+
+        // Explosions Positions object
+        var explosions = [];
+
+        // Missiles Positions object
+        var missiles = [];
+
+        // Draw player to screen at left/top position
+        function drawPlayer(){
+            var content="";
+
+            if(player!=null) content='<div id="player" class="player" style="left:'+player.left+'px; top:'+player.top+'px;"></div>';
+            document.getElementById('players').innerHTML=content;
+        }
+        
+        // Draw missiles
+        function drawMissiles(){
+            var content="";
+            
+            // Loop through missiles object and add to screen at left/top positions
+            for(var i=0; i<missiles.length; i++){
+                content+='<div class="missle" style="left:'+missiles[i].left+'px; top:'+missiles[i].top+'px;"></div>';
+            }
+            document.getElementById('missiles').innerHTML=content;
+            
+        }
+
+        // Draw enemy planes
+        function drawEnemies(){
+            var content="";
+
+            // Loop through enemies object and add to screen at left/top positions
+            for(var i=0; i<enemies.length; i++){
+                content+='<div class="enemy" style="left:'+enemies[i].left+'px; top:'+enemies[i].top+'px;"></div>';
+            }
+            document.getElementById('enemies').innerHTML=content;
+        }
+
+        // Draw Explosions
+        function drawExplosions(){
+            var content="";
+
+            // Loop through explosions object and add to screen at left/top positions
+            for(var i=0; i<explosions.length; i++){
+                content+='<div class="explosions" style="left:'+explosions[i].left+'px; top:'+explosions[i].top+'px;"></div>';
+            }
+            document.getElementById('explosions').innerHTML=content;
+        }
+
+        // Move Enemies
+        function moveEnemies(){
+            var boardElem=document.getElementById('ocean');
+            
+            // Loop through all enemies and calculate next position
+            for(var i=0; i<enemies.length; i++){
+                enemies[i].top+=1;
+
+                // If current enemy has passed the bottom of the screen then remove it from the object
+                if(enemies[i].top>boardElem.offsetHeight) enemies.splice(i, 1);
+            }
+        }
+        
+        // Move Missiles
+        function moveMissiles(){
+
+            // Loop through all missiles and calculate next position
+            for(var i=0; i<missiles.length; i++){
+                missiles[i].top-=4;
+            }
+        }
+
+        // Check for any enemies that may be hit by missiles
+        function checkMissleHit(){
+            // Loop through all missiles and enemies to determine if there are any hits
+            for(var m=0; m<missiles.length; m++){
+                for(var e=0; e<enemies.length; e++){
+
+                    // Determine if the missle is within the area of the enemy
+                    if((missiles[m].top>=enemies[e].top&&missiles[m].top<=enemies[e].top+75)&&(missiles[m].left>=enemies[e].left&&missiles[m].left<=enemies[e].left+70)){
+                        
+                        // Add explosion in position of hit enemy
+                        explosions.push({left: enemies[e].left, top: enemies[e].top, function:setTimeout(function() {
+                            // Methos to remove the explosions in the order they are added
+                            explosions.shift();
+                            drawExplosions();
+                        }, 1000)});
+
+                        drawExplosions();
+
+                        // Remove missile that hit the enemy
+                        missiles.splice(m, 1);
+                        drawMissiles();
+
+                        // Remove destroyed enemy
+                        enemies.splice(e, 1);
+                        drawEnemies();
+                    }
+                }
+            }
+        }
+
+        // Check for any enemies that may be hit by missiles
+        function checkPlayerHit(){
+
+            // Loop through all enemies to determine if any hit the player
+            for(var e=0; e<enemies.length; e++){
+
+                // Determine if the player is within the area of the enemy
+                if((player.top>=enemies[e].top&&player.top<=enemies[e].top+75)&&(player.left>=enemies[e].left&&player.left<=enemies[e].left+70)){
+                    
+                    // Add explosion in position of hit enemy
+                    explosions.push({left: enemies[e].left, top: enemies[e].top, function:setTimeout(function() {
+                        // Methos to remove the explosions in the order they are added
+                        explosions.shift();
+                        drawExplosions();
+                    }, 1000)});
+
+                    // Add explosion in position of hit player
+                    explosions.push({left: player.left, top: player.top, function:setTimeout(function() {
+                            // Methos to remove the explosions in the order they are added
+                            explosions.shift();
+                            drawExplosions();
+                    }, 1000)});
+
+                    drawExplosions();
+
+                    // Remove all missles
+                    missiles = [];
+                    drawMissiles();
+
+                    // Remove destroyed enemy
+                    enemies.splice(e, 1);
+                    drawEnemies();
+                    
+                    // Remove destroyed player
+                    player = null;
+                    drawPlayer();
+                    
+                    // Stop tracking key down events
+                    document.onkeydown=null;
+
+                    // Stop game loop
+                    gameEnd = true;
+
+                    document.getElementById('gameOver').style.display="inline-block";
+                    break;
+                }
+            }
+        }
+
+        // Check for keyboard input
+        document.onkeydown=function(e) {
+            var boardElem=document.getElementById('ocean');
+            var playerElem=document.getElementById('player');
+
+            if(e.keyCode==37&&player.left-10>=0){  // LEFT
+                player.left-=20;
+            }else if(e.keyCode==38&&player.top-10>=boardElem.offsetHeight-(boardElem.offsetHeight*.33)){  // UP
+                player.top-=20;
+            }else if(e.keyCode==39&&player.left+10<=boardElem.offsetWidth-playerElem.offsetWidth){  // RIGHT
+                player.left+=20;
+            }else if(e.keyCode==40&&player.top+10<=boardElem.offsetHeight-playerElem.offsetHeight){  // DOWN
+                player.top+=20;
+            }else if(e.keyCode==32){  // FIRE
+                // Add new missile at players center and top position
+                missiles.push({left: player.left+playerElem.offsetWidth/2, top: player.top-8});
+            }
+            drawPlayer();
+            drawMissiles();
+        }
+
+        // Game loop for handling movement and drawing of elements
+        function gameLoop(){
+            drawPlayer();
+            moveMissiles();
+            drawMissiles();
+            moveEnemies();
+            drawEnemies();
+            checkMissleHit();
+            checkPlayerHit();
+
+            if(!gameEnd) setTimeout(gameLoop, 10);
+        }
+        gameLoop();
+
+    </script>
+</body>
+</html>
