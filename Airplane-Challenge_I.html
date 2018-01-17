@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Airplane</title>
+</head>
+<body>
+    <style type="text/css">
+        * {
+            border: 0;
+            margin: 0
+        }
+        #ocean {
+            background-image: url("img/ocean2.jpg");
+            width: 900px;
+            height: 700px;
+        }
+        .player {
+            position: absolute;
+            background-image: url("img/player2.png");
+            width: 70px;
+            height: 75px;
+        }
+        .enemy {
+            position: absolute;
+            background-image: url("img/enemy2.png");
+            width: 70px;
+            height: 75px;
+        }
+	</style>
+    
+    <div id="ocean">
+        <div id="players">
+            
+        </div>
+        <div id="enemies">
+            
+        </div>
+    </div>
+
+	<script type="text/javascript">
+        // Challenge 
+        //      (basic) Add feature: Move player up and down.
+        //      (basic) Add more enemies (add 4 more on the ocean).
+        //      (intermediate) Change Background (different colors or your own images).
+        //      (intermediate) Change Enemy plane (your own images).
+        //      (intermediate) Change Hero plane (your own images).
+        //      (advanced) Modify feature: Limit player's up/down range to about 1/3rd of the bottom of the screen.
+
+        var player = {
+            left: 450,
+            top: 625
+        }
+
+        var enemies = [
+            { left:150, top:50 },
+            { left:250, top:100 },
+            { left:350, top:150 },
+            { left:450, top:100 },
+            { left:550, top:50 }
+        ];
+
+        function drawPlayer(){
+            var content='<div id="player" class="player" style="left:'+player.left+'px; top:'+player.top+'px;"></div>';
+            document.getElementById('players').innerHTML=content;
+        }
+
+        function drawEnemies(){
+            var content="";
+            for(var i=0; i<enemies.length; i++){
+                content+='<div class="enemy" style="left:'+enemies[i].left+'px; top:'+enemies[i].top+'px;"></div>';
+            }
+            document.getElementById('enemies').innerHTML=content;
+        }
+        
+        drawPlayer();
+        drawEnemies();
+
+        document.onkeydown=function(e) {
+            var boardElem=document.getElementById('ocean');
+            var playerElem=document.getElementById('player');
+
+            //console.log();
+            
+            if(e.keyCode==37&&player.left-10>=0){  // LEFT
+                player.left-=10;
+            }else if(e.keyCode==38&&player.top-10>=boardElem.offsetHeight-(boardElem.offsetHeight*.33)){  // UP
+                player.top-=10;
+            }else if(e.keyCode==39&&player.left+10<=boardElem.offsetWidth-playerElem.offsetWidth){  // RIGHT
+                player.left+=10;
+            }else if(e.keyCode==40&&player.top+10<=boardElem.offsetHeight-playerElem.offsetHeight){  // DOWN
+                player.top+=10;
+            }
+            drawPlayer();
+        }
+    </script>
+</body>
+</html>
